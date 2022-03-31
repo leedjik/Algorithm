@@ -21,7 +21,7 @@ int faresSize;
 int dijk[3][201]; // dijk[0]: s시작점, dijk[1]: a시작점, dijk[2]: b시작점
 
 // start -> end 최단 경로 구하기
-void dijkstra(int which, int n, int start) {
+void dijkstra(int which, int n, int start) { //which: s인지, a인지, b인지
 	for (int i = 1; i <= n; i++) {
 		dijk[which][i] = INF;  
 	}
