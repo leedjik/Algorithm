@@ -9,9 +9,16 @@ typedef struct {
 	int weight;	// 간선의 가중치
 }Data;
 
+struct cmp {
+	bool operator()(Data a, Data b) {
+		return a.weight > b.weight;	// 가중치 오름차순
+	}
+};
+
 vector <Data> v[6];	// v[x]: x번 노드에 연결된 다음 노드와 가중치의 정보
 int Dijk[6];	// Dijk[x]: x번 노드까지의 최단 경로 값
-queue <int> q;
+
+priority_queue <Data, vector<Data>, cmp> pq;
 
 void MakeGraph() {
 
@@ -38,30 +45,34 @@ void InitDijkArray() {
 		Dijk[i] = INF;
 	}
 }
-void InitQueue() {
-	q.push(1);		// 시작하는 1번 노드 삽입
-	Dijk[1] = 0;	// Dijk[1] = 0으로 갱신
+void InitQueue(int start) {
+	pq.push({start, 0});	// 시작하는 노드 삽입
+	Dijk[start] = 0;		// Dijk[시작] = 0으로 갱신
 }
 void DijkStra() {
 
-	// queue가 텅~ 빌때까지 다익스트라 알고리즘 반복 수행
-	while (!q.empty()) {
+	// priority_queue가 텅~ 빌때까지 다익스트라 알고리즘 반복 수행
+	while (!pq.empty()) {
 	
-		// queue 맨 앞 노드 가져오기
-		int nowNode = q.front();
-		q.pop();
+		// priority_queue 맨 앞 노드 가져오기
+		Data nowNode = pq.top();
+		pq.pop();
 
+		int node = nowNode.node;
+		int weightSum = nowNode.weight;
+
+		if (Dijk[node] < weightSum) continue;	//이미 이전에 더 적은 가중치로 Dijk[node]를 갱신함
 
 		// nowNode와 연결되어 있는 다른 모든 노드 탐색
-		for (int i = 0; i < v[nowNode].size(); i++) {
-			int nextNode = v[nowNode][i].node;
-			int weight = v[nowNode][i].weight;
+		for (int i = 0; i < v[node].size(); i++) {
+			int nextNode = v[node][i].node;
+			int weight = v[node][i].weight;
 
-			// ( 다음 노드에 저장된 값 > 다음 노드로 방문하면서 소비할 가중치의 합 ) 일때만 값 갱신 & 큐 삽입
-			if (Dijk[nextNode] > Dijk[nowNode] + weight) {
-				Dijk[nextNode] = Dijk[nowNode] + weight;
+			// ( 다음 노드에 저장된 값 > 다음 노드로 방문하면서 소비할 가중치의 합 ) 일때만 값 갱신, 그리고 pq삽입
+			if (Dijk[nextNode] > weight + weightSum) {
+				Dijk[nextNode] = weight + weightSum;
 
-				q.push(nextNode);
+				pq.push({nextNode, Dijk[nextNode]});
 			}
 		}
 	}
@@ -69,7 +80,7 @@ void DijkStra() {
 int main(void) {
 	MakeGraph();
 	InitDijkArray();
-	InitQueue();
+	InitQueue(1);	//노드 1을 시작이라고 가정
 
 	DijkStra();
 
